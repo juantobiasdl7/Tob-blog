@@ -3,24 +3,42 @@ import BlogList from './BlogList';
 
 const Home = () => {
 
-    const [blogs, setBlogs] = useState([
-        { title: 'My new website', body: 'lorem ipsum...', author: 'Tobías', id: 1 },
-        { title: 'Welcome party!', body: 'lorem ipsum...', author: 'Carlos', id: 2 },
-        { title: 'Web dev top tips', body: 'lorem ipsum...', author: 'Tobías', id: 3 } 
-    ]);
+    const [blogs, setBlogs] = useState(null);
+    const [isPending, setIsPending] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleDelete = (id) => {
-        const newBlogs = blogs.filter(blog =>blog.id !== id );
-        setBlogs(newBlogs);
-    }
+    // const handleDelete = (id) => {
+    //     const newBlogs = blogs.filter(blog =>blog.id !== id );
+    //     setBlogs(newBlogs);
+    // }
 
     useEffect(() => {
-        console.log('use effect ran')
+        fetch(' http://localhost:8000/blogs')
+        .then(res => {
+            console.log(res);
+            if (!res.ok) {
+                throw Error('could not fetch data from that resource...');
+            }
+            return res.json();
+        })
+        .then((data) => {
+            console.log(data);
+            setBlogs(data);
+            setIsPending(false);
+            setError(null);
+        })
+        .catch((e) => {
+            console.log(e.message);
+            setIsPending(false);
+            setError(e.message);
+        });
     }, []);
 
     return ( 
         <div className="home">
-            <BlogList blogs={blogs} title="All Blogs!" handleDelete={handleDelete}/>
+            {error && <div>{ error }</div>}
+           { isPending && <div>Loading...</div>}
+           {blogs && <BlogList blogs={blogs} title="All Blogs!" />}
             {/* <BlogList blogs={blogs.filter((blog) => blog.author === 'Tobías' )} title="Tobías' Blogs!"/>*/}
         </div>
      );
